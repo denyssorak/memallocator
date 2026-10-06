@@ -72,12 +72,9 @@ void deallocate(Allocator *a, void **mem) {
 	BlockLabel *label = (BlockLabel *)*mem - 1;
 
 	size_t size = label->size;
-	printf("%zu\n", size);
 
 	FreeBlock *newBlock = (FreeBlock *)label;
 	initFreeBlock(newBlock, size);
-	//  newBlock->next = a->head;
-	//  a->head = newBlock;
 	merge(a, newBlock);
 
 	a->totalsize += size + sizeof(BlockLabel);
@@ -100,10 +97,8 @@ void merge(Allocator *a, FreeBlock *b) {
 				// check if the block is the head or not
 				if (prev != NULL) {
 					prevOfB = prev;
-					// if it is not
 					prev->next = b;
 				} else {
-					// if it is then b is the new head
 					a->head = b;
 				}
 				b->next = curr->next;
@@ -131,7 +126,13 @@ void merge(Allocator *a, FreeBlock *b) {
 			// we just indicated that now it is
 			if (merged == 0) {
 				merged = 1;
-			} else {
+			}
+			// if b has been merged previously
+			// we have made a temp ptr to keep curr running forward
+			// and we unlink temp from the list
+			// and link it in front of b, increasing temp's size
+			// and making b = temp
+			else {
 				if (prev != NULL) {
 					prev->next = temp->next;
 				} else {
