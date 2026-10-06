@@ -1,4 +1,5 @@
 #include "../include/allocator.h"
+#include <stdbool.h>
 #include <stdio.h>
 
 void initAllocator(Allocator *a, size_t newtotalsize) {
@@ -71,12 +72,83 @@ void deallocate(Allocator *a, void **mem) {
 	BlockLabel *label = (BlockLabel *)*mem - 1;
 
 	size_t size = label->size;
+	printf("%zu\n", size);
 
 	FreeBlock *newBlock = (FreeBlock *)label;
 	initFreeBlock(newBlock, size);
-	newBlock->next = a->head;
-	a->head = newBlock;
+	//  newBlock->next = a->head;
+	//  a->head = newBlock;
+	merge(a, newBlock);
 
 	a->totalsize += size + sizeof(BlockLabel);
 	*mem = NULL;
+}
+
+void merge(Allocator *a, FreeBlock *b) {
+	FreeBlock *curr = a->head;
+	FreeBlock *prev = NULL;
+	bool merged = 0;
+	FreeBlock *prevOfB = NULL; // is used to merge
+
+	while (curr != NULL) {
+		// if curr is the block in front of b
+		if (curr == (FreeBlock *)((char *)b + sizeof(FreeBlock) + b->size)) {
+			// if b hasn't been merged before
+			// we simply make b bigger
+			// and chain it into the freelist
+			if (merged == 0) {
+				// check if the block is the head or not
+				if (prev != NULL) {
+					prevOfB = prev;
+					// if it is not
+					prev->next = b;
+				} else {
+					// if it is then b is the new head
+					a->head = b;
+				}
+				b->next = curr->next;
+				merged = 1;
+			}
+			// if b has been merged already
+			// we unchain the found block to connect to b
+			// to avoid chaining b again
+			else {
+				if (prev != NULL) {
+					prev->next = curr->next;
+				} else {
+					a->head = curr->next;
+				}
+			}
+			b->size += curr->size;
+			prev = curr;
+			curr = curr->next;
+		}
+		// now if curr is the block behind b
+		else if (b == (FreeBlock *)((char *)curr + sizeof(FreeBlock) + curr->size)) {
+			FreeBlock *temp = curr;
+			curr = curr->next;
+			// if b hasn't been merged
+			// we just indicated that now it is
+			if (merged == 0) {
+				merged = 1;
+			} else {
+				if (prev != NULL) {
+					prev->next = temp->next;
+				} else {
+					a->head = temp->next;
+				}
+				if (prevOfB != NULL) {
+					prevOfB->next = temp;
+				} else {
+					a->head = temp;
+				}
+				temp->next = b->next;
+			}
+			temp->size += b->size;
+			b = temp;
+		} else {
+			prev = curr;
+			curr = curr->next;
+		}
+	}
 }
