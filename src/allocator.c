@@ -89,7 +89,7 @@ void merge(Allocator *a, FreeBlock *b) {
 
 	while (curr != NULL) {
 		// if curr is the block in front of b
-		if (curr == (FreeBlock *)((char *)b + sizeof(FreeBlock) + b->size)) {
+		if (curr == (FreeBlock *)((char *)b + sizeof(BlockLabel) + b->size)) {
 			// if b hasn't been merged before
 			// we simply make b bigger
 			// and chain it into the freelist
@@ -119,7 +119,7 @@ void merge(Allocator *a, FreeBlock *b) {
 			curr = curr->next;
 		}
 		// now if curr is the block behind b
-		else if (b == (FreeBlock *)((char *)curr + sizeof(FreeBlock) + curr->size)) {
+		else if (b == (FreeBlock *)((char *)curr + sizeof(BlockLabel) + curr->size)) {
 			FreeBlock *temp = curr;
 			curr = curr->next;
 			// if b hasn't been merged
@@ -152,4 +152,10 @@ void merge(Allocator *a, FreeBlock *b) {
 			curr = curr->next;
 		}
 	}
+	if (merged == 0) {
+		b->next = a->head;
+		a->head = b;
+	}
+
+	return;
 }
