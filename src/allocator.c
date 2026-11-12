@@ -114,7 +114,7 @@ void merge(Allocator *a, FreeBlock *b) {
 					a->head = curr->next;
 				}
 			}
-			b->size += curr->size;
+			b->size += curr->size + sizeof(BlockLabel);
 			prev = curr;
 			curr = curr->next;
 		}
@@ -126,6 +126,7 @@ void merge(Allocator *a, FreeBlock *b) {
 			// we just indicated that now it is
 			if (merged == 0) {
 				merged = 1;
+				prev = temp;
 			}
 			// if b has been merged previously
 			// we have made a temp ptr to keep curr running forward
@@ -145,7 +146,7 @@ void merge(Allocator *a, FreeBlock *b) {
 				}
 				temp->next = b->next;
 			}
-			temp->size += b->size;
+			temp->size += b->size + sizeof(BlockLabel);
 			b = temp;
 		} else {
 			prev = curr;
