@@ -8,7 +8,7 @@ Custom memory allocator written from scratch in C.
  - [x] Allocate Function
  - [x] Deallocate Function (Make sure the allocator reuses memory if possible and doesn't if not possbile)
  - [x] Create memory merging (merge the memory previously used so it can be reused with greater size)
- - [ ] Reallocate Function (Let the user reallocate memory instead of doing the whole deallocate/allocate cycle)
+ - [x] Reallocate Function (Let the user reallocate memory instead of doing the whole deallocate/allocate cycle)
  - [ ] Callocate for allocating memory for multiple elements of size n bytes each
  - [ ] Perfomance Improvement (After the logic is done, try to improve perfomance speed)
  - [ ] Ensure Thread safety

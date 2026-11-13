@@ -1,6 +1,7 @@
 #include "../include/allocator.h"
 #include <stdbool.h>
 #include <stdio.h>
+#include <string.h>
 
 void initAllocator(Allocator *a, size_t newtotalsize) {
 	a->totalsize = newtotalsize;
@@ -11,7 +12,6 @@ void initAllocator(Allocator *a, size_t newtotalsize) {
 
 void *allocate(Allocator *a, size_t size) {
 	if (a->totalsize < size + sizeof(BlockLabel)) {
-		printf("totalsize < size + BlockLabel size.\n");
 		return NULL;
 	}
 	FreeBlock *curr = a->head;
@@ -159,4 +159,71 @@ void merge(Allocator *a, FreeBlock *b) {
 	}
 
 	return;
+}
+
+void *reallocate(Allocator *a, void **mem, size_t newsize) {
+	// initial checks
+	if (*mem == NULL) {
+		if (newsize <= 0) {
+			return NULL;
+		}
+		return allocate(a, newsize);
+	}
+	if (newsize <= 0) {
+		deallocate(a, mem);
+		return NULL;
+	}
+
+	// find the label of the block we are working with
+	BlockLabel *label = (BlockLabel *)*mem - 1;
+	// reallocating less memory
+	if (newsize + sizeof(FreeBlock) <= label->size) {
+		// calculate the leftover size
+		size_t leftover = label->size - newsize - sizeof(BlockLabel);
+		// create a label for the left over so we can simply pass it into deallocate()
+		BlockLabel *leftoverlabel = (BlockLabel *)((char *)*mem + newsize);
+		initBlockLabel(leftoverlabel, leftover);
+
+		// now the ptr that is passed into deallocate()
+		void *leftoverptr = (void *)(leftoverlabel + 1);
+		deallocate(a, &leftoverptr);
+
+		// change the size of the main label to the new size
+		label->size = newsize;
+		// return the ptr
+		return *mem;
+	} else if (newsize > label->size) {
+		// find what is located right after this block
+		FreeBlock *curr = a->head;
+		FreeBlock *prev = NULL;
+
+		while (curr != NULL) {
+			// if curr is the block in front of main block
+			if (curr == (FreeBlock *)((char *)label + sizeof(BlockLabel) + label->size) && curr->size >= (newsize - label->size + sizeof(FreeBlock))) {
+				FreeBlock *splitBlock = (FreeBlock *)((char *)curr + (newsize - label->size));
+				splitBlock->size = curr->size - (newsize - label->size);
+				splitBlock->next = curr->next;
+				if (prev != NULL) {
+					prev->next = splitBlock;
+				} else {
+					a->head = splitBlock;
+				}
+
+				a->totalsize -= (newsize - label->size);
+				label->size = newsize;
+
+				return *mem;
+			}
+			prev = curr;
+			curr = curr->next;
+		}
+		void *newMem = allocate(a, newsize);
+		if (newMem == NULL) {
+			return NULL;
+		}
+		memcpy(newMem, *mem, label->size);
+		deallocate(a, mem);
+		return newMem;
+	}
+	return *mem;
 }

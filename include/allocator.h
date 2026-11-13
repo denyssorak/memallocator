@@ -16,4 +16,6 @@ void deallocate(Allocator *a, void **mem);
 
 void merge(Allocator *a, FreeBlock *b);
 
+void *reallocate(Allocator *a, void **mem, size_t newsize);
+
 #endif
