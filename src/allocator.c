@@ -1,6 +1,7 @@
 #include "../include/allocator.h"
 #include <errno.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -230,4 +231,31 @@ void *reallocate(Allocator *a, void **mem, size_t newsize) {
 		return newMem;
 	}
 	return *mem;
+}
+
+void *callocate(Allocator *a, size_t n, size_t size) {
+	// Initial checks
+	if (n == 0 || size == 0) {
+		return NULL;
+	}
+	if (SIZE_MAX / size < n) {
+		// not enough space for the allocation
+		errno = ENOMEM;
+		return NULL;
+	}
+
+	size_t total = n * size;
+
+	void *mem = allocate(a, total);
+	if (mem == NULL) {
+		return NULL;
+	}
+
+	char *curr = (char *)mem;
+	for (size_t i = 0; i < total; i++) {
+		*curr = 0;
+		curr += 1;
+	}
+
+	return mem;
 }

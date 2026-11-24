@@ -18,7 +18,7 @@ int main(void) {
 	*/
 
 	void *test;
-	if ((test = allocate(&a, 128)) == NULL) {
+	if ((test = callocate(&a, 8, 16)) == NULL && errno == ENOMEM) {
 		fprintf(stderr, "Allocation failed: %s\n", strerror(errno));
 	}
 
