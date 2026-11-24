@@ -18,4 +18,6 @@ void merge(Allocator *a, FreeBlock *b);
 
 void *reallocate(Allocator *a, void **mem, size_t newsize);
 
+void *callocate(Allocator *a, size_t n, size_t size);
+
 #endif

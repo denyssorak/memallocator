@@ -1,4 +1,5 @@
 #include "../include/allocator.h"
+#include <errno.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
@@ -12,6 +13,8 @@ void initAllocator(Allocator *a, size_t newtotalsize) {
 
 void *allocate(Allocator *a, size_t size) {
 	if (a->totalsize < size + sizeof(BlockLabel)) {
+		// there is not enough space to allocate a block
+		errno = ENOMEM;
 		return NULL;
 	}
 	FreeBlock *curr = a->head;
@@ -24,7 +27,8 @@ void *allocate(Allocator *a, size_t size) {
 		curr = curr->next;
 	}
 	if (curr == NULL) {
-		printf("suitable block not found.\n");
+		// no suitable block was found
+		errno = ENOMEM;
 		return NULL;
 	}
 	FreeBlock *restOfList = curr->next;

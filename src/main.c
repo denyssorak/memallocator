@@ -1,10 +1,13 @@
 #include "../include/allocator.h"
+#include <errno.h>
 #include <stdio.h>
+#include <string.h>
 
 int main(void) {
 	Allocator a;
 	initAllocator(&a, 128);
 	printf("%zu, head : %p\n", a.totalsize, a.head);
+	/*
 	printf("must have one block: ");
 	FreeBlock *curr = a.head;
 	while (curr != NULL) {
@@ -12,19 +15,12 @@ int main(void) {
 		curr = curr->next;
 	}
 	printf("\n");
+	*/
 
-	void *test1 = NULL;
-
-	void *test2 = allocate(&a, 16);
-	void *temp = reallocate(&a, &test1, 16);
-	if (temp == NULL) {
-		printf("reallocate failed\n");
-		return 0;
-	} else {
-		test1 = temp;
+	void *test;
+	if ((test = allocate(&a, 128)) == NULL) {
+		fprintf(stderr, "Allocation failed: %s\n", strerror(errno));
 	}
-	BlockLabel *label1 = (BlockLabel *)((char *)test1 - sizeof(BlockLabel));
-	printf("16 -> %zu\n", label1->size);
-	printf("%zu, head : %p\n", a.totalsize, a.head);
-	return 1;
+
+	return 0;
 }
