@@ -8,7 +8,7 @@ typedef struct {
 	FreeBlock *head;
 } Allocator;
 
-void initAllocator(Allocator *a, size_t newtotalsize);
+int initAllocator(Allocator *a, size_t newtotalsize);
 
 void *allocate(Allocator *a, size_t size);
 

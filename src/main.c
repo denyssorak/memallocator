@@ -2,8 +2,11 @@
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 int main(void) {
+	printf("sbrk(0) : %p\n", sbrk(0));
+
 	Allocator a;
 	initAllocator(&a, 128);
 	printf("%zu, head : %p\n", a.totalsize, a.head);
@@ -18,9 +21,12 @@ int main(void) {
 	*/
 
 	void *test;
-	if ((test = callocate(&a, 8, 16)) == NULL && errno == ENOMEM) {
+	if ((test = allocate(&a, 16)) == NULL && errno == ENOMEM) {
 		fprintf(stderr, "Allocation failed: %s\n", strerror(errno));
 	}
+
+	printf("sbrk(0) : %p\n", sbrk(0));
+	printf("%zu, head : %p\n", a.totalsize, a.head);
 
 	return 0;
 }

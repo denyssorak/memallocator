@@ -4,12 +4,17 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
-void initAllocator(Allocator *a, size_t newtotalsize) {
+int initAllocator(Allocator *a, size_t newtotalsize) {
+	a->head = (FreeBlock *)sbrk(newtotalsize);
+	if (a->head == (FreeBlock *)-1) {
+		return -1;
+	}
 	a->totalsize = newtotalsize;
-	a->head = (FreeBlock *)malloc(newtotalsize);
 	a->head->size = newtotalsize;
 	a->head->next = NULL;
+	return 0;
 }
 
 void *allocate(Allocator *a, size_t size) {
